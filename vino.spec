@@ -15,7 +15,7 @@
 Summary: A remote desktop system for GNOME
 Name: vino
 Version: 2.28.1
-Release: 8%{?dist}
+Release: 9%{?dist}
 URL: http://www.gnome.org
 Source0: http://download.gnome.org/sources/vino/2.28/%{name}-%{version}.tar.bz2
 
@@ -28,6 +28,7 @@ Patch5: vino-2.8.1-sanity-check-fb-update.patch
 Patch6: clipboard-leak.patch
 Patch7: upnp.patch
 Patch8: reachability.patch
+Patch9: deferred.patch
 
 License: GPLv2+
 Group: User Interface/Desktops
@@ -73,6 +74,7 @@ connect to a running GNOME session using VNC.
 %patch6 -p1 -b .clipboard-leak
 %patch7 -p1 -b .upnp
 %patch8 -p1 -b .reachability
+%patch9 -p1 -b .deferred
 
 autoreconf -i -f
 
@@ -154,11 +156,12 @@ fi
 %{_sysconfdir}/xdg/autostart/vino-server.desktop
 
 %changelog
+* Thu Oct 17 2013 Soren Sandmann <ssp@redhat.com> - 2.28.1-9
+- Reject clients in deferred auth state
+  - Bug 1009228
+
 * Mon Jan 14 2013 Soren Sandmann <ssp@redhat.com> - 2.28.1-8
 - Remove spurious 'e' from glib2-devel requirement
-
-* Mon Jan 14 2013 Soren Sandmann <ssp@redhat.com> - 2.28.1-7
-- Bump version number
 
 * Mon Jan 14 2013 Soren Sandmann <ssp@redhat.com> - 2.28.1-6
 - Bump version number
