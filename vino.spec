@@ -15,7 +15,7 @@
 Summary: A remote desktop system for GNOME
 Name: vino
 Version: 2.28.1
-Release: 9%{?dist}
+Release: 10%{?dist}
 URL: http://www.gnome.org
 Source0: http://download.gnome.org/sources/vino/2.28/%{name}-%{version}.tar.bz2
 
@@ -29,6 +29,7 @@ Patch6: clipboard-leak.patch
 Patch7: upnp.patch
 Patch8: reachability.patch
 Patch9: deferred.patch
+Patch10: translation-fixes2.patch
 
 License: GPLv2+
 Group: User Interface/Desktops
@@ -75,6 +76,7 @@ connect to a running GNOME session using VNC.
 %patch7 -p1 -b .upnp
 %patch8 -p1 -b .reachability
 %patch9 -p1 -b .deferred
+%patch10 -p1 -b .translation-fixes2
 
 autoreconf -i -f
 
@@ -156,6 +158,10 @@ fi
 %{_sysconfdir}/xdg/autostart/vino-server.desktop
 
 %changelog
+* Tue Nov 1 2016 Ondrej Holy <oholy@redhat.com> - 2.28.1-10
+- Update translations
+  - Bug 1333631
+
 * Thu Oct 17 2013 Soren Sandmann <ssp@redhat.com> - 2.28.1-9
 - Reject clients in deferred auth state
   - Bug 1009228
