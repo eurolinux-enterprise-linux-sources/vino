@@ -1,0 +1,91 @@
+diff -up vino-2.28.1/capplet/vino-preferences.c.rechability vino-2.28.1/capplet/vino-preferences.c
+--- vino-2.28.1/capplet/vino-preferences.c.rechability	2009-07-27 14:47:23.000000000 -0400
++++ vino-2.28.1/capplet/vino-preferences.c	2013-01-14 08:31:15.989876297 -0500
+@@ -192,7 +192,9 @@ vino_preferences_dialog_allowed_toggled 
+   /* ugly: here I delay the GetInfo for 3 seconds, time necessary to server starts */
+   if (allowed)
+     {
++#if 0
+       vino_message_box_show_image (VINO_MESSAGE_BOX (dialog->message));
++#endif
+       vino_message_box_set_label (VINO_MESSAGE_BOX (dialog->message),
+                                   _("Checking the connectivity of this machine..."));
+       g_timeout_add_seconds (3, (GSourceFunc) delay_update_message, dialog);
+@@ -857,7 +859,9 @@ error_message (VinoPreferencesDialog *di
+ 
+   g_string_append_c (message, ' ');
+   g_string_append_printf (message, _("Others can access your computer using the address %s."), url->str);
++#if 0
+   vino_message_box_hide_image (VINO_MESSAGE_BOX (dialog->message));
++#endif
+   vino_message_box_set_label (VINO_MESSAGE_BOX (dialog->message), message->str);
+ 
+   g_string_free (message, TRUE);
+@@ -931,7 +935,9 @@ got_status (SoupSession *session, SoupMe
+ 	    }
+ 
+ 	  message = g_strdup_printf (_("Others can access your computer using the address %s."), url->str);
++#if 0
+ 	  vino_message_box_hide_image (VINO_MESSAGE_BOX (dialog->message));
++#endif
+ 	  vino_message_box_set_label (VINO_MESSAGE_BOX (dialog->message), message);
+ 
+ 	  g_free (message);
+@@ -981,7 +987,9 @@ vino_preferences_dialog_update_message_b
+   allowed = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (dialog->allowed_toggle));
+   if (!allowed)
+     {
++#if 0
+       vino_message_box_hide_image (VINO_MESSAGE_BOX (dialog->message));
++#endif
+       vino_message_box_set_label (VINO_MESSAGE_BOX (dialog->message),
+ 				  _("Nobody can access your desktop."));
+       dialog->retrieving_info = FALSE;
+@@ -995,7 +1003,9 @@ vino_preferences_dialog_update_message_b
+       return;
+     }
+ 
++#if 0
+   vino_message_box_show_image (VINO_MESSAGE_BOX (dialog->message));
++#endif
+   vino_message_box_set_label (VINO_MESSAGE_BOX (dialog->message),
+ 			      _("Checking the connectivity of this machine..."));
+ 
+@@ -1028,14 +1038,18 @@ vino_preferences_dialog_update_message_b
+ static void
+ vino_preferences_dialog_setup_message_box (VinoPreferencesDialog *dialog)
+ {
++#if 0
+   GtkWidget *event_box;
+ 
+   event_box = GTK_WIDGET (gtk_builder_get_object (dialog->builder, "event_box"));
+   g_assert (event_box != NULL);
++#endif
+ 
+   dialog->message = vino_message_box_new ();
++#if 0
+   gtk_container_add (GTK_CONTAINER (event_box), dialog->message);
+   gtk_widget_show (dialog->message);
++#endif
+ 
+   vino_preferences_dialog_update_message_box (dialog);
+ }
+diff -up vino-2.28.1/capplet/vino-preferences.ui.rechability vino-2.28.1/capplet/vino-preferences.ui
+--- vino-2.28.1/capplet/vino-preferences.ui.rechability	2013-01-14 08:21:34.800904011 -0500
++++ vino-2.28.1/capplet/vino-preferences.ui	2013-01-14 08:21:34.805904010 -0500
+@@ -149,6 +149,7 @@
+                     <property name="position">3</property>
+                   </packing>
+                 </child>
++<!--
+                 <child>
+                   <object class="GtkHBox" id="message_box">
+                     <property name="visible">True</property>
+@@ -179,6 +180,7 @@
+                     <property name="position">4</property>
+                   </packing>
+                 </child>
++-->
+               </object>
+               <packing>
+                 <property name="position">0</property>

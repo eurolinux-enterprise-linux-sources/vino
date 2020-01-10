@@ -15,7 +15,7 @@
 Summary: A remote desktop system for GNOME
 Name: vino
 Version: 2.28.1
-Release: 3%{?dist}
+Release: 8%{?dist}
 URL: http://www.gnome.org
 Source0: http://download.gnome.org/sources/vino/2.28/%{name}-%{version}.tar.bz2
 
@@ -24,6 +24,10 @@ Patch0: vino-smclient.patch
 Patch1: restart-command.patch
 Patch3: mdns-crash.patch
 Patch4: translation-fixes.patch
+Patch5: vino-2.8.1-sanity-check-fb-update.patch
+Patch6: clipboard-leak.patch
+Patch7: upnp.patch
+Patch8: reachability.patch
 
 License: GPLv2+
 Group: User Interface/Desktops
@@ -65,6 +69,10 @@ connect to a running GNOME session using VNC.
 %patch0 -p1 -b .smclient
 %patch3 -p1 -b .mdns-crash
 %patch4 -p1 -b .translation-fixes
+%patch5 -p1 -b .sanity-check-fb-update
+%patch6 -p1 -b .clipboard-leak
+%patch7 -p1 -b .upnp
+%patch8 -p1 -b .reachability
 
 autoreconf -i -f
 
@@ -146,6 +154,36 @@ fi
 %{_sysconfdir}/xdg/autostart/vino-server.desktop
 
 %changelog
+* Mon Jan 14 2013 Soren Sandmann <ssp@redhat.com> - 2.28.1-8
+- Remove spurious 'e' from glib2-devel requirement
+
+* Mon Jan 14 2013 Soren Sandmann <ssp@redhat.com> - 2.28.1-7
+- Bump version number
+
+* Mon Jan 14 2013 Soren Sandmann <ssp@redhat.com> - 2.28.1-6
+- Bump version number
+
+* Thu Dec 20 2012 Soren Sandmann <ssp@redhat.com> - 2.28.1-5
+- Add reachability.patch
+  Remove UI about whether the is only reachable locally or not.
+  Fix for CVE-2011-1164
+  - Bug #553477
+
+* Thu Dec 20 2012 Soren Sandmann <ssp@redhat.com> - 2.28.1-5
+- Add upnp.patch
+  Fix for CVE-2011-1165
+  - Bug #678846
+
+* Thu Dec 20 2012 Soren Sandmann <ssp@redhat.com> - 2.28.1-5
+- Add clipboard-leak.patch
+  Fix for CVE-2012-4429
+  - Bug #857250
+
+* Thu Dec 20 2012 Soren Sandmann <ssp@redhat.com> - 2.28.1-5
+- Add vino-2.8.1-sanity-check-fb-update.patch
+  Fix for CVE-2011-0904 and CVE-2011-0904
+  - Bugs #694456, #694455
+
 * Wed Jun 30 2010 Soren Sandmann <ssp@redhat.com> - 2.28.1-4
 - Translation updates.
   Related: rhbz 575682

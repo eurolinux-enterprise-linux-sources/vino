@@ -1,0 +1,14 @@
+diff -up vino-2.8.1/server/libvncserver/rfbserver.c.sanity-check-fb-update vino-2.8.1/server/libvncserver/rfbserver.c
+--- vino-2.8.1/server/libvncserver/rfbserver.c.sanity-check-fb-update	2004-07-12 08:06:43.000000000 -0400
++++ vino-2.8.1/server/libvncserver/rfbserver.c	2011-04-28 06:23:18.520001239 -0400
+@@ -1256,6 +1256,10 @@ rfbSendFramebufferUpdate(cl, givenUpdate
+         cl->rfbRawBytesEquivalent += (sz_rfbFramebufferUpdateRectHeader
+                                       + w * (cl->format.bitsPerPixel / 8) * h);
+ 
++        /* Validate the rectangle given by the update packet. */
++        if (w + x > cl->screen->width || h + y > cl->screen->height)
++            goto tx_error;
++
+         switch (cl->preferredEncoding) {
+         case rfbEncodingRaw:
+             if (!rfbSendRectEncodingRaw(cl, x, y, w, h))
