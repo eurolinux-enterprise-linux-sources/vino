@@ -26,6 +26,9 @@
 
 #include <rfb/rfb.h>
 #include "vino-fb.h"
+#ifdef VINO_ENABLE_HTTP_SERVER
+#include "vino-http.h"
+#endif
 #include "vino-mdns.h"
 #include "vino-input.h"
 #include "vino-cursor.h"
@@ -67,6 +70,10 @@ struct _VinoServerPrivate
 
   VinoAuthMethod    auth_methods;
   char             *vnc_password;
+
+#ifdef VINO_ENABLE_HTTP_SERVER
+  VinoHTTP         *http;
+#endif
 
   int               alternative_port;
 
@@ -287,7 +294,7 @@ static void
 vino_background_draw (gboolean status)
 {
   static GSettings *background_settings;
-  static gsize initialised;
+  gsize initialised;
 
   if (g_once_init_enter (&initialised))
     {
@@ -438,12 +445,9 @@ vino_server_update_client_timeout (rfbClientPtr rfb_client)
 }
 
 static inline gboolean
-more_data_pending (rfbClientPtr rfb_client)
+more_data_pending (int fd)
 {
-  struct pollfd pollfd = { rfb_client->sock, POLLIN|POLLPRI, 0 };
-
-  if (ReadPending(rfb_client) > 0)
-      return TRUE;
+  struct pollfd pollfd = { fd, POLLIN|POLLPRI, 0 };
 
   return poll (&pollfd, 1, 0) == 1;
 }
@@ -458,7 +462,7 @@ vino_server_client_data_pending (GIOChannel   *source,
 
   do {
     rfbProcessClientMessage (rfb_client);
-  } while (more_data_pending (rfb_client));
+  } while (more_data_pending (rfb_client->sock));
   
   return vino_server_update_client (rfb_client);
 }
@@ -1084,6 +1088,10 @@ vino_server_init_from_screen (VinoServer *server,
 
   vino_server_init_io_channels (server);
 
+#ifdef VINO_ENABLE_HTTP_SERVER
+  server->priv->http = vino_http_get (rfb_screen->rfbPort);
+#endif
+
   vino_mdns_add_service ("_rfb._tcp", rfb_screen->rfbPort);
 
   cb = gtk_clipboard_get_for_display (gdk_screen_get_display (screen),
@@ -1101,6 +1109,16 @@ static void
 vino_server_finalize (GObject *object)
 {
   VinoServer *server = VINO_SERVER (object);
+  
+#ifdef VINO_ENABLE_HTTP_SERVER
+  if (server->priv->http)
+    {
+      vino_http_remove_rfb_port (server->priv->http,
+				 server->priv->rfb_screen->rfbPort);
+      g_object_unref (server->priv->http);
+    }
+  server->priv->http = NULL;
+#endif /* VINO_ENABLE_HTTP_SERVER */
 
   vino_server_deinit_io_channels (server);
   

@@ -1,6 +1,11 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
+capplet/vino-message-box.c
+capplet/vino-preferences.c
+capplet/vino-preferences.desktop.in.in
+[type: gettext/glade]capplet/vino-preferences.ui
 common/org.gnome.Vino.gschema.xml
+common/vino-keyring.c
 server/smclient/eggdesktopfile.c
 server/smclient/eggsmclient.c
 server/vino-dbus-listener.c
@@ -14,3 +19,4 @@ server/vino-status-icon.c
 server/vino-status-tube-icon.c
 server/vino-tube-server.c
 server/vino-util.c
+tools/vino-passwd.c

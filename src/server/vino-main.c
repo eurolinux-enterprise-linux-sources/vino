@@ -36,12 +36,12 @@
 #include "vino-dbus-listener.h"
 #include "eggsmclient.h"
 
+#ifdef VINO_HAVE_GNUTLS
+#include <gnutls/gnutls.h>
+
 #ifdef VINO_HAVE_TELEPATHY_GLIB
 static gboolean tube = FALSE;
 #endif
-
-#ifdef VINO_HAVE_GNUTLS
-#include <gnutls/gnutls.h>
 
 # ifdef GNOME_ENABLE_DEBUG
 static void
@@ -78,12 +78,61 @@ typedef enum
 static RunMode
 get_run_mode (VinoApplication *vino)
 {
+  if (g_settings_get_boolean (vino->settings, "enabled"))
+    return RUN_MODE_ALL;
+
 #ifdef VINO_HAVE_TELEPATHY_GLIB
   if (tube)
     return RUN_MODE_TUBE;
 #endif
 
-  return RUN_MODE_ALL;
+  return RUN_MODE_EXIT;
+}
+
+static void
+set_all_servers_reject(VinoApplication *vino,
+    gboolean reject)
+{
+  guint i;
+
+  for (i = 0; i < vino->n_screens; i++)
+    {
+      VinoServer *server;
+
+      server = vino_dbus_listener_get_server (vino->listeners[i]);
+
+      vino_server_set_reject_incoming (server, reject);
+    }
+}
+
+static void
+enabled_changed (VinoApplication *vino)
+{
+  RunMode mode;
+  gboolean reject;
+
+  mode = get_run_mode (vino);
+  if (mode == RUN_MODE_EXIT)
+    {
+      g_message ("The desktop sharing service has been disabled, exiting.");
+      g_main_loop_quit (vino->main_loop);
+      return;
+    }
+
+  if (mode == RUN_MODE_TUBE)
+    {
+      g_message ("The desktop sharing service has been disabled, "
+          "reject network connections");
+      reject = TRUE;
+    }
+  else
+    {
+      g_message ("The desktop sharing service has been enabled, "
+          "accept network connections");
+      reject = FALSE;
+    }
+
+  set_all_servers_reject (vino, reject);
 }
 
 #ifdef VINO_HAVE_TELEPATHY_GLIB
@@ -202,7 +251,10 @@ name_acquired (GDBusConnection *connection,
       vino_server_set_on_hold (server, FALSE);
       vino_server_set_reject_incoming (server, reject);
 
-      vino_mdns_start(vino_server_get_network_interface (server));
+      if (g_settings_get_boolean (vino->settings, "enabled"))
+        {
+          vino_mdns_start(vino_server_get_network_interface (server));
+        }
 
       g_object_unref (server);
     }
@@ -252,11 +304,6 @@ main (int argc, char **argv)
       { NULL }
     };
 
-    /* Call this before parsing options, as that triggers creation of an SM
-     * client. Creating the client in a disabled state, and then switching to
-     * the real state later, avoids a critical warning on startup. */
-    egg_sm_client_set_mode (EGG_SM_CLIENT_MODE_DISABLED);
-
     context = g_option_context_new (_("- VNC Server for GNOME"));
     g_option_context_add_group (context, gtk_get_option_group (TRUE));
     g_option_context_add_group (context, egg_sm_client_get_option_group ());
@@ -275,6 +322,15 @@ main (int argc, char **argv)
 
   /* GSettings */
   vino.settings = g_settings_new ("org.gnome.Vino");
+  g_signal_connect_swapped (vino.settings, "changed::enabled",
+                            G_CALLBACK (enabled_changed), &vino);
+
+  if (get_run_mode (&vino) == RUN_MODE_EXIT)
+    {
+      g_warning ("The desktop sharing service is not "
+                 "enabled, so it should not be run.");
+      return 1;
+    }
 
   gtk_window_set_default_icon_name ("preferences-desktop-remote-desktop");
   g_set_application_name (_("GNOME Desktop Sharing"));

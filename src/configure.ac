@@ -1,5 +1,5 @@
 AC_PREREQ([2.64])
-AC_INIT([Vino], [3.22.0], [https://bugzilla.gnome.org/enter_bug.cgi?product=vino], [vino], [https://wiki.gnome.org/Projects/Vino])
+AC_INIT([Vino], [3.8.1], [https://bugzilla.gnome.org/enter_bug.cgi?product=vino], [vino], [https://live.gnome.org/Vino])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_SRCDIR([server/vino-fb.c])
 AC_CONFIG_HEADERS([config.h])
@@ -10,6 +10,18 @@ AM_SILENT_RULES([yes])
 
 AC_PROG_CC
 AM_PROG_CC_C_O
+
+# Check whether to enable HTTP server support
+AC_ARG_ENABLE([http-server],
+  [AS_HELP_STRING([--disable-http-server],
+   [build with an HTTP server for serving a Java applet client @<:@default=yes@:>@])],
+   [],
+   [enable_http_server=yes])
+
+AS_IF([test "x$enable_http_server" = "xyes"],
+  [AC_DEFINE([VINO_ENABLE_HTTP_SERVER], [], [Enable HTTP server support])])
+
+AM_CONDITIONAL([VINO_ENABLE_HTTP_SERVER], [test "x$enable_http_server" = "xyes"])
 
 # GNOME common
 AM_MAINTAINER_MODE([enable])
@@ -58,6 +70,25 @@ AS_IF([test "x$have_telepathy" = "xyes"],
     [AC_MSG_ERROR([telepathy support requested but not found])])])
 
 AM_CONDITIONAL([VINO_HAVE_TELEPATHY_GLIB], [test "x$have_telepathy" = "xyes"])
+
+# Check for NetworkManager
+NETWORKMANAGER_DEPS="NetworkManager >= 0.7"
+
+AC_ARG_WITH([network-manager],
+  [AS_HELP_STRING([--without-network-manager],
+    [ignore the presence of NetworkManager and disable it])])
+
+AS_IF([test "x$with_network_manager" != "xno"],
+  [PKG_CHECK_EXISTS([$NETWORKMANAGER_DEPS],
+    [have_network_manager=yes],
+    [have_network_manager=no])],
+  [have_network_manager=no])
+
+AS_IF([test "x$have_network_manager" = "xyes"],
+  [AC_DEFINE([VINO_HAVE_NETWORKMANAGER], [], [Build with NetworkManager support])],
+  [NETWORKMANAGER_DEPS=""
+    AS_IF([test "x$with_network_manager" = "xyes"],
+    [AC_MSG_ERROR([NetworkManager support requested but not found])])])
 
 # Check for secret
 SECRET_DEPS="libsecret-1"
@@ -265,32 +296,26 @@ AS_IF([test "x$have_ipv6" = "xyes"],
     [AC_MSG_ERROR([IPv6 support requested but not found])])])
 AC_MSG_RESULT([$have_ipv6])
 
-dnl systemd user unit directory
-AC_ARG_WITH([systemduserunitdir],
-  [AS_HELP_STRING([--with-systemduserunitdir=DIR],
-    [Directory for systemd user service files])],
-  [],
-  [PKG_CHECK_EXISTS([systemd],
-    [with_systemduserunitdir=$($PKG_CONFIG --variable=systemduserunitdir systemd)],
-    [with_systemduserunitdir='${libdir}/systemd/user'])])
-AS_IF([test x$with_systemduserunitdir != xno],
-  [AC_SUBST([systemduserunitdir], [$with_systemduserunitdir])])
-AM_CONDITIONAL([INSTALL_USER_UNITS], [test -n "$with_systemduserunitdir" -a "x$with_systemduserunitdir" != xno])
-
 # GNOME libraries
 GTK_VERSION=3.0.0
-GLIB_VERSION=2.32.0
+GLIB_VERSION=2.17.0
 GIO_VERSION=2.26
+SOUP_VERSION=2.24.0
 
-PKG_CHECK_MODULES([VINO_SERVER], [glib-2.0 >= $GLIB_VERSION gio-unix-2.0 gtk+-x11-3.0 >= $GTK_VERSION $TELEPATHY_GLIB_DEPS libnotify >= 0.7.0 $SECRET_DEPS $GNUTLS_DEPS $AVAHI_DEPS])
+PKG_CHECK_MODULES([VINO_SERVER], [glib-2.0 >= $GLIB_VERSION gio-unix-2.0 gtk+-x11-3.0 >= $GTK_VERSION $TELEPATHY_GLIB_DEPS libnotify >= 0.7.0 $SECRET_DEPS $NETWORKMANAGER_DEPS $GNUTLS_DEPS $AVAHI_DEPS])
+
+PKG_CHECK_MODULES([VINO_CAPPLET], [glib-2.0 >= $GLIB_VERSION gio-2.0 >= $GIO_VERSION gtk+-3.0 >= $GTK_VERSION libsoup-2.4 >= $SOUP_VERSION $SECRET_DEPS])
+
+PKG_CHECK_MODULES([VINO_TOOLS], [glib-2.0 >= $GLIB_VERSION gio-2.0 >= $GIO_VERSION gobject-2.0 >= $GLIB_VERSION $SECRET_DEPS])
 
 # EGG stuff
-PKG_CHECK_MODULES([EGG_SMCLIENT], [gtk+-3.0 ice sm])
+PKG_CHECK_MODULES([EGG_SMCLIENT], [gtk+-3.0])
 
 GLIB_GSETTINGS
 
 AC_CONFIG_FILES([
 Makefile
+capplet/vino-preferences.desktop.in
 po/Makefile.in
 ])
 

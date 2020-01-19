@@ -397,7 +397,6 @@ extern void rfbSetLocalOnly(rfbScreenInfoPtr rfbScreen, rfbBool localOnly);
 extern void rfbCloseClient(rfbClientPtr cl);
 extern int ReadExact(rfbClientPtr cl, char *buf, int len);
 extern int ReadExactTimeout(rfbClientPtr cl, char *buf, int len,int timeout);
-extern int ReadPending(rfbClientPtr cl);
 extern int WriteExact(rfbClientPtr cl, const char *buf, int len);
 extern void rfbProcessNewConnection(rfbScreenInfoPtr rfbScreen, int insock);
 extern void rfbCheckFds(rfbScreenInfoPtr rfbScreen,long usec);
@@ -450,6 +449,12 @@ extern void rfbTranslateNone(char *table, rfbPixelFormat *in,
 extern rfbBool rfbSetTranslateFunction(rfbClientPtr cl);
 extern rfbBool rfbSetClientColourMap(rfbClientPtr cl, int firstColour, int nColours);
 extern void rfbSetClientColourMaps(rfbScreenInfoPtr rfbScreen, int firstColour, int nColours);
+
+/* httpd.c */
+
+extern void httpInitSockets(rfbScreenInfoPtr rfbScreen);
+extern void httpCheckFds(rfbScreenInfoPtr rfbScreen);
+
 
 
 /* auth.c */

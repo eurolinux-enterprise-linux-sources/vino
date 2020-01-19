@@ -1,17 +1,19 @@
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 SUBDIRS = po
 
-AM_DISTCHECK_CONFIGURE_FLAGS = \
+DISTCHECK_CONFIGURE_FLAGS = \
 	--with-avahi \
-	--with-secret \
+	--with-libnotify \
+	--with-gnome-keyring \
+	--with-network-manager \
 	--with-telepathy \
 	--with-gnutls \
 	--with-gcrypt \
 	--with-zlib \
 	--with-jpeg \
 	--enable-debug \
-	--enable-compile-warnings=maximum \
-	--with-systemduserunitdir='$${libdir}/systemd/user-distcheck'
+	--enable-http-server \
+	--enable-compile-warnings=maximum
 
 noinst_LTLIBRARIES = \
 	libeggsmclient.la
@@ -26,7 +28,8 @@ libeggsmclient_la_CPPFLAGS = \
 	-I$(top_builddir)
 
 libeggsmclient_la_LIBADD = \
-	$(EGG_SMCLIENT_LIBS)
+	$(EGG_SMCLIENT_LIBS) \
+	-lSM -lICE
 
 libeggsmclient_la_SOURCES = \
 	server/smclient/eggsmclient.c \
@@ -124,6 +127,12 @@ vino_server_LDADD = \
 	$(JPEG_LIBS) \
 	$(X_LIBS) $(XTEST_LIBS) $(XSHM_LIBS) $(XDAMAGE_LIBS) $(ZLIB_LIBS)
 
+if VINO_ENABLE_HTTP_SERVER
+VINO_HTTP_sources = \
+	server/vino-http.c \
+	server/vino-http.h
+endif
+
 if VINO_HAVE_TELEPATHY_GLIB
 VINO_TELEPATHY_GLIB_sources = \
 	server/vino-tube-servers-manager.c \
@@ -138,14 +147,13 @@ clientfiledir = $(datarootdir)/telepathy/clients
 dist_clientfile_DATA = server/Vino.client
 endif
 
-BUILT_SOURCES = \
-	$(nodist_vino_server_SOURCES)
-
 vino_server_SOURCES = \
+	$(marshal_data) \
+	$(enum_data) \
+	common/vino-dbus.c \
+	common/vino-dbus.h \
 	server/vino-cursor.c \
 	server/vino-cursor.h \
-	server/vino-dbus.c \
-	server/vino-dbus.h \
 	server/vino-fb.c \
 	server/vino-fb.h \
 	server/vino-input.c \
@@ -172,11 +180,8 @@ vino_server_SOURCES = \
 	$(VINO_MINIUPNP_sources) \
 	$(VINO_IFADDR_sources) \
 	$(VINO_LIBVNCSERVER_sources) \
+	$(VINO_HTTP_sources) \
 	$(VINO_TELEPATHY_GLIB_sources)
-
-nodist_vino_server_SOURCES = \
-	server/vino-enums.c \
-	server/vino-marshal.c
 
 marshal_data = \
 	server/vino-marshal.c \
@@ -193,10 +198,10 @@ enum_data = \
 	server/vino-enums.h
 
 vino_enum_headers = \
-	$(srcdir)/server/vino-server.h \
-	$(srcdir)/server/vino-prompt.h \
-	$(srcdir)/server/vino-status-icon.h \
-	$(srcdir)/server/vino-status-tube-icon.h
+	server/vino-server.h \
+	server/vino-prompt.h \
+	server/vino-status-icon.h \
+	server/vino-status-tube-icon.h
 
 server/vino-enums.c: $(vino_enum_headers) server/vino-enums.h
 	$(AM_V_GEN)$(GLIB_MKENUMS) \
@@ -235,27 +240,76 @@ nodist_service_DATA = server/org.freedesktop.Telepathy.Client.Vino.service
 server/org.freedesktop.Telepathy.Client.Vino.service: server/org.freedesktop.Telepathy.Client.Vino.service.in
 	$(AM_V_GEN)$(SED) -e "s|[@]libexecdir[@]|$(libexecdir)|" $< > $@
 
-if INSTALL_USER_UNITS
-systemdservicedir = $(systemduserunitdir)
-systemdservice_in_files = server/vino-server.service.in
-systemdservice_DATA = server/vino-server.service
+bin_PROGRAMS = \
+	vino-preferences \
+	vino-passwd
 
-$(systemdservice_DATA): server/vino-server.service.in Makefile
-	$(AM_V_GEN) $(SED) -e "s|\@libexecdir\@|$(libexecdir)|" $< > $@
-endif
+vino_preferences_CPPFLAGS = \
+	-I$(top_srcdir)/common \
+	-I$(top_builddir) \
+	-DVINO_LOCALEDIR=\""$(prefix)/$(DATADIRNAME)/locale"\"  \
+	-DVINO_UIDIR=\""$(pkgdatadir)"\" \
+	-DVINO_ICONDIR=\""$(datadir)/pixmaps\"" \
+	$(VINO_CAPPLET_CFLAGS) \
+	$(WARN_CFLAGS) \
+	$(DISABLE_DEPRECATED)
 
-applicationsdir = $(datadir)/applications/
-applications_in_files = server/vino-server.desktop.in
-nodist_applications_DATA = $(applications_in_files:.desktop.in=.desktop)
+vino_preferences_SOURCES = \
+	common/vino-dbus.h \
+	common/vino-dbus.c \
+	common/vino-keyring.h \
+	common/vino-keyring.c \
+	capplet/vino-connectivity-info.h \
+	capplet/vino-connectivity-info.c \
+	capplet/vino-url-webservice.h \
+	capplet/vino-url-webservice.c \
+	capplet/vino-radio-button.h \
+	capplet/vino-radio-button.c \
+	capplet/vino-message-box.h \
+	capplet/vino-message-box.c \
+	capplet/vino-preferences.c
+
+vino_preferences_LDADD = \
+	$(VINO_CAPPLET_LIBS) \
+	$(X_LIBS)
+
+vino_passwd_CPPFLAGS = \
+	-I$(top_builddir) \
+	-DVINO_LOCALEDIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
+	$(VINO_TOOLS_CFLAGS) \
+	$(WARN_CFLAGS) \
+	$(DISABLE_DEPRECATED)
+
+vino_passwd_SOURCES = \
+	tools/vino-passwd.c
+
+vino_passwd_LDADD = \
+	$(VINO_TOOLS_LIBS)
+
+uidir = $(pkgdatadir)
+dist_ui_DATA = \
+	capplet/vino-preferences.ui \
+	capplet/webservices
+
+autostartdir = $(sysconfdir)/xdg/autostart
+autostart_in_files = server/vino-server.desktop.in
+nodist_autostart_DATA = $(autostart_in_files:.desktop.in=.desktop)
+
+desktopdir = $(datadir)/applications
+desktop_in_files = capplet/vino-preferences.desktop.in
+nodist_desktop_DATA = $(desktop_in_files:.desktop.in=.desktop)
 
 @INTLTOOL_DESKTOP_RULE@
 
 # GSettings schemas, enum files and conversion file
 gsettings_ENUM_NAMESPACE = org.gnome.Vino
-gsettings_ENUM_FILES = common/vino-settings-enums.h
+gsettings_ENUM_FILES = capplet/vino-preferences.c
 gsettings_SCHEMAS = common/org.gnome.Vino.gschema.xml
 
 @GSETTINGS_RULES@
+
+convertdir = $(datadir)/GConf/gsettings
+dist_convert_DATA = common/org.gnome.Vino.convert
 
 if MAINTAINER_MODE
 dist-hook: dist-changelog
@@ -275,9 +329,7 @@ dist-changelog:
 
 dist_noinst_DATA = \
 	$(desktop_in_files) \
-	$(systemdservice_in_files) \
 	\
-	$(gsettings_ENUM_FILES) \
 	$(gsettings_SCHEMAS) \
 	\
 	docs/remote-desktop.txt \
@@ -298,6 +350,9 @@ dist_noinst_DATA = \
 	server/miniupnp/LICENCE \
 	\
 	ChangeLog.pre-git \
+	intltool-extract.in \
+	intltool-merge.in \
+	intltool-update.in \
 	vino.doap
 
 dist_noinst_SCRIPTS = autogen.sh
@@ -307,11 +362,13 @@ CLEANFILES = \
 	$(nodist_service_DATA) \
 	$(marshal_data) \
 	$(enum_data) \
-	$(systemdservice_DATA) \
 	server/vino-server.desktop \
 	server/vino-server.desktop.in
 
 DISTCLEANFILES = \
+	intltool-extract \
+	intltool-merge \
+	intltool-update \
 	po/.intltool-merge-cache
 
 MAINTAINERCLEANFILES = $(gsettings_SCHEMAS:.xml=.valid)

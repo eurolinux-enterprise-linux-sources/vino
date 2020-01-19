@@ -30,6 +30,9 @@
 #endif
 
 #include "vino-util.h"
+#ifdef VINO_ENABLE_HTTP_SERVER
+#include "vino-http.h"
+#endif
 
 #include "vino-mdns.h"
 
@@ -126,7 +129,11 @@ vino_dbus_listener_class_init (GObjectClass *class)
 static guint16
 vino_dbus_listener_get_port (VinoDBusListener *listener)
 {
+#ifdef VINO_ENABLE_HTTP_SERVER
+  return vino_get_http_server_port ();
+#else
   return vino_server_get_port (listener->server);
+#endif
 }
 
 static GVariant *
@@ -233,7 +240,6 @@ server_connected_changed_cb (GObject    *gobject,
                                                 builder,
                                                 NULL),
                                  NULL);
-  g_variant_builder_unref (builder);
 }
 
 void

@@ -1,0 +1,30 @@
+From 7f9dc95e14d87cc184de2b3145a8c02ffd779802 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?S=C3=B8ren=20Sandmann?= <ssp@redhat.com>
+Date: Tue, 7 Jan 2014 15:24:38 -0500
+Subject: [PATCH] vino_background_draw: The 'initialised' variable should be
+ static
+
+The variable 'initialised' is used with g_once_init_enter() to guard
+the initialization of the 'background_settings' variable. For this to
+work, the 'initialised' variable must be static; otherwise it will be
+unpredictable whether 'background_settings' is initialized or not.
+---
+ server/vino-server.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/server/vino-server.c b/server/vino-server.c
+index a3edf9d..8becd52 100644
+--- a/server/vino-server.c
++++ b/server/vino-server.c
+@@ -294,7 +294,7 @@ static void
+ vino_background_draw (gboolean status)
+ {
+   static GSettings *background_settings;
+-  gsize initialised;
++  static gsize initialised;
+ 
+   if (g_once_init_enter (&initialised))
+     {
+-- 
+1.8.3.1
+

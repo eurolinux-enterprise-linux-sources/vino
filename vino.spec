@@ -1,96 +1,86 @@
-Name:    vino
-Version: 3.22.0
-Release: 7%{?dist}
+%define libgcrypt_version 1.2.0
+%define libnotify_version 0.7.0
+%define telepathy_glib_version 0.11.6
+
 Summary: A remote desktop system for GNOME
+Name: vino
+Version: 3.8.1
+Release: 10%{?dist}
+URL: http://www.gnome.org
+#VCS: git:git://git.gnome.org/vino
+Source0: http://download.gnome.org/sources/vino/3.8/%{name}-%{version}.tar.xz
+
+# https://bugzilla.gnome.org/show_bug.cgi?id=700987
+Patch0: vino-allocation.patch
+
+# https://bugzilla.gnome.org/show_bug.cgi?id=641811
+Patch1: 0001-Reject-new-clients-if-in-the-deferred-state.patch
+
+Patch2: vino-3.8.1_translation_updates.patch
+Patch3: 0001-vino_background_draw-The-initialised-variable-should.patch
 
 License: GPLv2+
-URL:     https://wiki.gnome.org/Projects/Vino
-#VCS:    git:git://git.gnome.org/vino
-Source0: https://download.gnome.org/sources/%{name}/3.22/%{name}-%{version}.tar.xz
+Group: User Interface/Desktops
 
-# https://bugzilla.redhat.com/show_bug.cgi?id=1380620
-Patch0: revert-gsettings-conversion-file.patch
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=1546043
-Patch1: Return-error-if-X11-is-not-detected.patch
-Patch2: Do-not-restart-service-after-unclean-exit-code.patch
-
-# https://bugzilla.redhat.com/show_bug.cgi?id=1580577
-Patch3: Do-not-listen-all-if-invalid-interface-is-provided.patch
-Patch4: Prevent-monitoring-all-interfaces-after-change-of-ot.patch
-Patch5: Properly-remove-watches-when-changing-server-props.patch
-
-BuildRequires: pkgconfig(avahi-client)
-BuildRequires: pkgconfig(avahi-glib)
-BuildRequires: pkgconfig(gnutls)
-BuildRequires: pkgconfig(gtk+-x11-3.0)
-BuildRequires: pkgconfig(ice)
-BuildRequires: pkgconfig(libnotify)
-BuildRequires: pkgconfig(libsecret-1)
-BuildRequires: pkgconfig(sm)
-BuildRequires: pkgconfig(telepathy-glib)
-BuildRequires: libgcrypt-devel
-BuildRequires: libXt-devel, libXtst-devel, libXdamage-devel
+BuildRequires: gtk3-devel
+BuildRequires: libgcrypt-devel >= %{libgcrypt_version}
+BuildRequires: libnotify-devel >= %{libnotify_version}
+BuildRequires: telepathy-glib-devel >= %{telepathy_glib_version}
+BuildRequires: libXt-devel, libXtst-devel, libXdamage-devel, avahi-glib-devel
+BuildRequires: desktop-file-utils
 BuildRequires: intltool
 BuildRequires: gettext
-BuildRequires: desktop-file-utils
-
-# For user unit.
-BuildRequires: systemd
-%{?systemd_requires}
-
-# Needed for autoreconf
+BuildRequires: libsoup-devel
+BuildRequires: NetworkManager-devel
+BuildRequires: libSM-devel
+BuildRequires: libgnome-keyring-devel
+# BuildRequires: autoconf automake libtool
 BuildRequires: gnome-common
-
-# Following requires are for directory ownership
-Requires: telepathy-filesystem
-Requires: dbus
 
 %description
 Vino is a VNC server for GNOME. It allows remote users to
 connect to a running GNOME session using VNC.
 
-
 %prep
 %setup -q
-%patch0 -p1 -b .revert-gsettings-conversion-file
-%patch1 -p1 -b .Return-error-if-X11-is-not-detected
-%patch2 -p1 -b .Do-not-restart-service-after-unclean-exit-code
-%patch3 -p1 -b .Do-not-listen-all-if-invalid-interface-is-provided
-%patch4 -p1 -b .Prevent-monitoring-all-interfaces-after-change-of-ot
-%patch5 -p1 -b .Properly-remove-watches-when-changing-server-props
+%patch0 -p1
+%patch1 -p1
+%patch2 -p2 -b .translations
+%patch3 -p1 -b .uninitialized
 
-# Needed for revert-gsettings-conversion-file.patch
-autoreconf -fi
+# autoreconf -i -f
+# intltoolize --force
 
 %build
 %configure                      \
-  --disable-silent-rules        \
-  --with-avahi                  \
-  --with-secret                 \
-  --with-telepathy              \
-  --with-gnutls                 \
+  --enable-avahi                \
+  --enable-gnome-keyring        \
+  --disable-gnutls              \
+  --disable-http-server         \
+  --enable-libnotify            \
+  --enable-network-manager      \
+  --enable-telepathy
+
+# drop unneeded direct library deps with --as-needed
+# libtool doesn't make this easy, so we do it the hard way
+sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0 /g' -e 's/    if test "$export_dynamic" = yes && test -n "$export_dynamic_flag_spec"; then/      func_append compile_command " -Wl,-O1,--as-needed"\n      func_append finalize_command " -Wl,-O1,--as-needed"\n\0/' libtool
 
 make %{?_smp_mflags}
 
-
 %install
-make install DESTDIR=%{buildroot} INSTALL="install -p"
+make install DESTDIR=$RPM_BUILD_ROOT
+
+# stuff we don't want
+rm -rf $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/icon-theme.cache
+rm -rf $RPM_BUILD_ROOT%{_bindir}/vino-preferences
+rm -rf $RPM_BUILD_ROOT%{_bindir}/vino-passwd
+rm -rf $RPM_BUILD_ROOT%{_datadir}/applications/vino-preferences.desktop
+rm -rf $RPM_BUILD_ROOT%{_datadir}/vino/vino-preferences.ui
+
 %find_lang %{name}
-
-
-%check
-desktop-file-validate %{buildroot}%{_datadir}/applications/vino-server.desktop
-
 
 %post
 touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
-%systemd_user_post vino-server.service
-
-
-%preun
-%systemd_user_preun vino-server.service
-
 
 %postun
 if [ $1 -eq 0 ]; then
@@ -98,8 +88,6 @@ if [ $1 -eq 0 ]; then
   gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
   glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
 fi
-%systemd_user_postun vino-server.service
-
 
 %posttrans
 gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
@@ -107,52 +95,17 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
 
 
 %files -f %{name}.lang
-%doc AUTHORS NEWS README docs/TODO docs/remote-desktop.txt
-%license COPYING
+%doc AUTHORS COPYING NEWS README docs/TODO docs/remote-desktop.txt
+%{_datadir}/vino
 %{_datadir}/dbus-1/services/org.freedesktop.Telepathy.Client.Vino.service
 %{_datadir}/telepathy/clients/Vino.client
 %{_libexecdir}/*
-%{_datadir}/applications/vino-server.desktop
+%{_sysconfdir}/xdg/autostart/vino-server.desktop
 %{_datadir}/glib-2.0/schemas/org.gnome.Vino.enums.xml
 %{_datadir}/glib-2.0/schemas/org.gnome.Vino.gschema.xml
 %{_datadir}/GConf/gsettings/org.gnome.Vino.convert
-%{_userunitdir}/vino-server.service
-
 
 %changelog
-* Mon Aug 27 2018 Ondrej Holy <oholy@redhat.com> - 3.22.0-7
-- Prevent monitoring all interfaces after change of other props
-- Resolves: #1580577
-
-* Wed May 23 2018 Ondrej Holy <oholy@redhat.com> - 3.22.0-6
-- Do not restart service after unclean exit code
-- Do not listen all if invalid interface is provided
-- Resolves: #1546043, #1580577
-
-* Mon May 21 2018 Ondrej Holy <oholy@redhat.com> - 3.22.0-5
-- Return error if X11 is not detected
-- Resolves: #1546043
-
-* Mon May 21 2018 Ondrej Holy <oholy@redhat.com> - 3.22.0-4
-- Add missing parameter for systemd scriptlets
-- Resolves: #1507892
-
-* Thu Mar 2 2017 Ondrej Holy <oholy@redhat.com> - 3.22.0-3
-- Revert GSettings conversion file
-- Resolves: #1380620
-
-* Thu Feb 23 2017 Ondrej Holy <oholy@redhat.com> - 3.22.0-2
-- Revert icon cache scriplets
-- Resolves: #1387055
-
-* Thu Feb 16 2017 Ondrej Holy <oholy@redhat.com> - 3.22.0-1
-- Update to 3.22.0
-- Resolves: #1387055, #1380620
-
-* Mon Mar 23 2015 Richard Hughes <rhughes@redhat.com> - 3.14.2-1
-- Update to 3.14.2
-- Resolves: #1174570, #1192548
-
 * Sat Feb 15 2014 Soren Sandmann <ssp@redhat.com> - 3.8.1-10
 - Do not install vino-preferences.ui (#1059231)
 

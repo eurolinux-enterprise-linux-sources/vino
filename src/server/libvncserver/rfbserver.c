@@ -150,7 +150,7 @@ rfbNewClient(rfbScreenInfoPtr rfbScreen,
     struct sockaddr_storage addr;
     socklen_t addrlen = sizeof(addr);
     int i;
-    char host[NI_MAXHOST] = "(unresolved)";
+    char host[NI_MAXHOST];
     const char *prt = "unknown";
 
     cl = (rfbClientPtr)calloc(sizeof(rfbClientRec),1);
@@ -166,11 +166,11 @@ rfbNewClient(rfbScreenInfoPtr rfbScreen,
 
       getpeername(sock, (struct sockaddr *)&addr, &addrlen);
 
-      if (getnameinfo((struct sockaddr *)&addr, addrlen,
-                      host, sizeof(host), NULL, 0, 0)) {
-        getnameinfo((struct sockaddr *)&addr, addrlen,
-                    host, sizeof(host), NULL, 0, NI_NUMERICHOST);
-      }
+      getnameinfo((struct sockaddr *)&addr,
+                  addrlen,
+                  host, sizeof(host),
+                  NULL, 0,
+                  0);
 
       cl->host = strdup(host);
 
@@ -387,8 +387,7 @@ rfbProcessClientMessage(rfbClientPtr cl)
         rfbAuthProcessClientMessage(cl);
         return;
     case RFB_AUTH_DEFERRED:
-	rfbLog("Authentication deferred for this client - closing connection\n");
-	rfbCloseClient(cl);
+	rfbLog("Authentication deferred - ignoring client message\n");
 	return;
     case RFB_INITIALISATION:
         rfbProcessClientInitMessage(cl);

@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2003 Sun Microsystems, Inc.
- * Copyright (C) 2006 Jonh Wendell <wendell@bani.com.br> 
  * Copyright © 2010 Codethink Limited
  *
  * This program is free software; you can redistribute it and/or
@@ -18,15 +16,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
  * 02111-1307, USA.
  *
- * Authors:
- *      Mark McLoughlin <mark@skynet.ie>
- *      Jonh Wendell <wendell@bani.com.br>
- *      Ryan Lortie <desrt@desrt.ca>
+ * Author: Ryan Lortie <desrt@desrt.ca>
  */
 
-typedef enum
-{
-  VINO_ICON_VISIBILITY_NEVER,
-  VINO_ICON_VISIBILITY_ALWAYS,
-  VINO_ICON_VISIBILITY_CLIENT
-} VinoIconVisibility;
+#ifndef __vino_keyring_h__
+#define __vino_keyring_h__
+
+#include <glib.h>
+
+gchar *         vino_keyring_get_password       (void);
+gboolean        vino_keyring_set_password       (const gchar *password);
+
+#endif /* __vino_keyring_h__ */

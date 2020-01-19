@@ -4,10 +4,12 @@
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
 
+PKG_NAME=vino
+
 (test -f $srcdir/configure.ac \
   && test -f $srcdir/server/vino-fb.c) || {
     echo -n "**Error**: Directory "\`$srcdir\'" does not look like the"
-    echo " top-level Vino directory"
+    echo " top-level $PKG_NAME directory"
     exit 1
 }
 

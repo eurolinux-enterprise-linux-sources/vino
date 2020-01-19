@@ -628,7 +628,7 @@ msgid "translator-credits"
 msgstr ""
 "Ilkka Tuohela, 2006-2007\n"
 "\n"
-"https://l10n.gnome.org/teams/fi/"
+"http://gnome.fi/"
 
 #: ../server/vino-status-icon.c:284
 msgid "Share your desktop with other users"
