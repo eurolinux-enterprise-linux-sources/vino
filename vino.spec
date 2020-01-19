@@ -1,6 +1,6 @@
 Name:    vino
 Version: 3.22.0
-Release: 3%{?dist}
+Release: 7%{?dist}
 Summary: A remote desktop system for GNOME
 
 License: GPLv2+
@@ -10,6 +10,15 @@ Source0: https://download.gnome.org/sources/%{name}/3.22/%{name}-%{version}.tar.
 
 # https://bugzilla.redhat.com/show_bug.cgi?id=1380620
 Patch0: revert-gsettings-conversion-file.patch
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1546043
+Patch1: Return-error-if-X11-is-not-detected.patch
+Patch2: Do-not-restart-service-after-unclean-exit-code.patch
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1580577
+Patch3: Do-not-listen-all-if-invalid-interface-is-provided.patch
+Patch4: Prevent-monitoring-all-interfaces-after-change-of-ot.patch
+Patch5: Properly-remove-watches-when-changing-server-props.patch
 
 BuildRequires: pkgconfig(avahi-client)
 BuildRequires: pkgconfig(avahi-glib)
@@ -45,6 +54,11 @@ connect to a running GNOME session using VNC.
 %prep
 %setup -q
 %patch0 -p1 -b .revert-gsettings-conversion-file
+%patch1 -p1 -b .Return-error-if-X11-is-not-detected
+%patch2 -p1 -b .Do-not-restart-service-after-unclean-exit-code
+%patch3 -p1 -b .Do-not-listen-all-if-invalid-interface-is-provided
+%patch4 -p1 -b .Prevent-monitoring-all-interfaces-after-change-of-ot
+%patch5 -p1 -b .Properly-remove-watches-when-changing-server-props
 
 # Needed for revert-gsettings-conversion-file.patch
 autoreconf -fi
@@ -71,11 +85,11 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/vino-server.desktop
 
 %post
 touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
-%systemd_user_post
+%systemd_user_post vino-server.service
 
 
 %preun
-%systemd_user_preun
+%systemd_user_preun vino-server.service
 
 
 %postun
@@ -84,7 +98,7 @@ if [ $1 -eq 0 ]; then
   gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
   glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
 fi
-%systemd_user_postun
+%systemd_user_postun vino-server.service
 
 
 %posttrans
@@ -106,6 +120,23 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
 
 
 %changelog
+* Mon Aug 27 2018 Ondrej Holy <oholy@redhat.com> - 3.22.0-7
+- Prevent monitoring all interfaces after change of other props
+- Resolves: #1580577
+
+* Wed May 23 2018 Ondrej Holy <oholy@redhat.com> - 3.22.0-6
+- Do not restart service after unclean exit code
+- Do not listen all if invalid interface is provided
+- Resolves: #1546043, #1580577
+
+* Mon May 21 2018 Ondrej Holy <oholy@redhat.com> - 3.22.0-5
+- Return error if X11 is not detected
+- Resolves: #1546043
+
+* Mon May 21 2018 Ondrej Holy <oholy@redhat.com> - 3.22.0-4
+- Add missing parameter for systemd scriptlets
+- Resolves: #1507892
+
 * Thu Mar 2 2017 Ondrej Holy <oholy@redhat.com> - 3.22.0-3
 - Revert GSettings conversion file
 - Resolves: #1380620
