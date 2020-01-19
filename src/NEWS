@@ -1,25 +1,162 @@
-Vino 3.14.2
+Vino 3.22.0
 ===========
 
-David King (3):
-      Fix Turkish desktop keywords translation
-      Skip intermediate file with Automake 1.15
-      Fix Turkish desktop keywords translation
+David King (1):
+      Update NEWS for 3.22.0 release
 
-Necdet Yücel (1):
-      Updated Turkish translation
+Vino 3.21.92
+============
+
+Alberts Muktupāvels (1):
+      build: Fix syntax error introduced in 27785a2
+
+Bastien Nocera (2):
+      server: Add a way for Vino to be started via user systemd
+      build: Use AM_DISTCHECK_CONFIGURE_FLAGS
+
+Cédric Valmary (2):
+      Updated Occitan translation
+      Updated Occitan translation
+
+Daniel Mustieles (1):
+      Updated Spanish translation
+
+David King (4):
+      Update British English translation
+      Allow building on non-systemd systems
+      Check for sm and ice in configure
+      Remove unused --with-network-manager option
+
+Eric R. Schulz (1):
+      Fix two memory leaks
+
+Fabio Tomat (3):
+      Updated Friulian translation
+      Updated Friulian translation
+      Updated Friulian translation     (cherry picked from commit 02c55160b2703675f55880dd8238c84342405532)
+
+Piotr Drąg (4):
+      Updated Polish translation
+      Add Language headers to po files
+      Updated Polish translation
+      Updated Polish translation
+
+Tiago Santos (1):
+      Updated Portuguese translation
+
+Vino 3.20.0
+===========
+
+Ask Hjorth Larsen (1):
+      Updated Danish translation
+
+Cédric Valmary (1):
+      Updated Occitan translation
+
+Sveinn í Felli (3):
+      Updated Icelandic translation
+      Updated Icelandic translation
+      Updated Icelandic translation
+
+Vino 3.18.1
+===========
+
+David King (1):
+      Avoid a crash when showing the preferences
+
+Vino 3.18.0
+===========
+
+Piotr Drąg (1):
+      Fix FSF address in Polish translation
+
+Vino 3.17.91
+============
+
+Chao-Hsiung Liao (1):
+      Updated Chinese (Taiwan) translation
+
+Cédric Valmary (2):
+      Updated Occitan translation
+      Updated Occitan translation
+
+Dimitri Tarassenko (1):
+      Improve handling of name resolution failure
+
+Fabio Tomat (2):
+      Added Friulian translation
+      Updated Friulian translation
+
+Jordi Mas (1):
+      Fixes to Catalan transation
+
+Pedro Albuquerque (1):
+      Updated Portuguese translation
+
+Piotr Drąg (1):
+      Updated Polish translation
+
+Sveinn í Felli (1):
+      Added Icelandic translation
+
+Vino 3.16.0
+===========
+
+David King (1):
+      Update NEWS for 3.16.0 release
+
+Vino 3.15.92
+============
+
+Alexander Shopov (1):
+      Updated Bulgarian translation
+
+Baurzhan Muftakhidinov (1):
+      Updated Kazakh translation
+
+Josef Andersson (1):
+      Updated Swedish translation
+
+Samir Ribic (1):
+      Updated Bosnian translation
+
+Vino 3.15.91
+============
+
+David King (1):
+      Avoid a critical EggSMClient warning on startup
 
 Ondrej Holy (1):
       Handle closed signal properly on notification prompt
 
-Vino 3.14.1
+Vino 3.15.90
+============
+
+Dan Winship (1):
+      vino-upnp: Use GNetworkMonitor
+
+Vino 3.15.4
 ===========
+
+David King (6):
+      Remove obsolete GSettings conversion file
+      Fix Turkish desktop keywords translation
+      Remove obsolete intltool scripts from Makefile
+      Skip intermediate file with Automake 1.15
+      Do not set obsolete PKG_NAME variable
+      Update NEWS for 3.15.4 release
 
 Emin Tufan (1):
       Updated Turkish translation
 
+Muhammet Kara (1):
+      Updated Turkish translation
+
 Timo Jyrinki (1):
       Change Finnish translation team web page to l10n.gnome.org
+
+Trần Ngọc Quân (1):
+      Updated Vietnamese translation
 
 Vino 3.14.0
 ===========

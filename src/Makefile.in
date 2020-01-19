@@ -102,8 +102,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
 	$(am__configure_deps) $(dist_noinst_SCRIPTS) \
-	$(am__dist_clientfile_DATA_DIST) $(dist_convert_DATA) \
-	$(dist_noinst_DATA) $(am__DIST_COMMON)
+	$(am__dist_clientfile_DATA_DIST) $(am__dist_noinst_DATA_DIST) \
+	$(am__DIST_COMMON)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
@@ -124,8 +124,8 @@ am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
 am__installdirs = "$(DESTDIR)$(libexecdir)" \
-	"$(DESTDIR)$(clientfiledir)" "$(DESTDIR)$(convertdir)" \
-	"$(DESTDIR)$(applicationsdir)" "$(DESTDIR)$(servicedir)"
+	"$(DESTDIR)$(clientfiledir)" "$(DESTDIR)$(applicationsdir)" \
+	"$(DESTDIR)$(servicedir)" "$(DESTDIR)$(systemdservicedir)"
 PROGRAMS = $(libexec_PROGRAMS)
 am__vino_server_SOURCES_DIST = server/vino-cursor.c \
 	server/vino-cursor.h server/vino-dbus.c server/vino-dbus.h \
@@ -305,9 +305,22 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-DATA = $(dist_clientfile_DATA) $(dist_convert_DATA) \
-	$(dist_noinst_DATA) $(nodist_applications_DATA) \
-	$(nodist_service_DATA)
+am__dist_noinst_DATA_DIST = server/vino-server.service.in \
+	common/vino-settings-enums.h common/org.gnome.Vino.gschema.xml \
+	docs/remote-desktop.txt docs/debugging.txt docs/TODO \
+	server/vino-marshal.list server/vino-server.desktop.in.in \
+	server/org.freedesktop.Telepathy.Client.Vino.service.in \
+	server/dbus-interface.xml server/libvncserver/tableinit24.c \
+	server/libvncserver/tableinittctemplate.c \
+	server/libvncserver/tabletrans24template.c \
+	server/libvncserver/tabletranstemplate.c \
+	server/libvncserver/tableinitcmtemplate.c \
+	server/libvncserver/zrleencodetemplate.c \
+	server/miniupnp/README server/miniupnp/LICENCE \
+	ChangeLog.pre-git vino.doap
+DATA = $(dist_clientfile_DATA) $(dist_noinst_DATA) \
+	$(nodist_applications_DATA) $(nodist_service_DATA) \
+	$(systemdservice_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 am__recursive_targets = \
@@ -406,7 +419,6 @@ CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
-DATADIRNAME = @DATADIRNAME@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DISABLE_DEPRECATED = @DISABLE_DEPRECATED@
@@ -453,6 +465,7 @@ LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
@@ -547,23 +560,24 @@ sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
+systemduserunitdir = @systemduserunitdir@
 target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 SUBDIRS = po
-DISTCHECK_CONFIGURE_FLAGS = \
+AM_DISTCHECK_CONFIGURE_FLAGS = \
 	--with-avahi \
 	--with-secret \
-	--with-network-manager \
 	--with-telepathy \
 	--with-gnutls \
 	--with-gcrypt \
 	--with-zlib \
 	--with-jpeg \
 	--enable-debug \
-	--enable-compile-warnings=maximum
+	--enable-compile-warnings=maximum \
+	--with-systemduserunitdir='$${libdir}/systemd/user-distcheck'
 
 noinst_LTLIBRARIES = \
 	libeggsmclient.la
@@ -578,8 +592,7 @@ libeggsmclient_la_CPPFLAGS = \
 	-I$(top_builddir)
 
 libeggsmclient_la_LIBADD = \
-	$(EGG_SMCLIENT_LIBS) \
-	-lSM -lICE
+	$(EGG_SMCLIENT_LIBS)
 
 libeggsmclient_la_SOURCES = \
 	server/smclient/eggsmclient.c \
@@ -739,6 +752,9 @@ vino_enum_headers = \
 
 servicedir = $(datadir)/dbus-1/services
 nodist_service_DATA = server/org.freedesktop.Telepathy.Client.Vino.service
+@INSTALL_USER_UNITS_TRUE@systemdservicedir = $(systemduserunitdir)
+@INSTALL_USER_UNITS_TRUE@systemdservice_in_files = server/vino-server.service.in
+@INSTALL_USER_UNITS_TRUE@systemdservice_DATA = server/vino-server.service
 applicationsdir = $(datadir)/applications/
 applications_in_files = server/vino-server.desktop.in
 nodist_applications_DATA = $(applications_in_files:.desktop.in=.desktop)
@@ -747,10 +763,9 @@ nodist_applications_DATA = $(applications_in_files:.desktop.in=.desktop)
 gsettings_ENUM_NAMESPACE = org.gnome.Vino
 gsettings_ENUM_FILES = common/vino-settings-enums.h
 gsettings_SCHEMAS = common/org.gnome.Vino.gschema.xml
-convertdir = $(datadir)/GConf/gsettings
-dist_convert_DATA = common/org.gnome.Vino.convert
 dist_noinst_DATA = \
 	$(desktop_in_files) \
+	$(systemdservice_in_files) \
 	\
 	$(gsettings_ENUM_FILES) \
 	$(gsettings_SCHEMAS) \
@@ -773,9 +788,6 @@ dist_noinst_DATA = \
 	server/miniupnp/LICENCE \
 	\
 	ChangeLog.pre-git \
-	intltool-extract.in \
-	intltool-merge.in \
-	intltool-update.in \
 	vino.doap
 
 dist_noinst_SCRIPTS = autogen.sh
@@ -784,13 +796,11 @@ CLEANFILES = \
 	$(nodist_service_DATA) \
 	$(marshal_data) \
 	$(enum_data) \
+	$(systemdservice_DATA) \
 	server/vino-server.desktop \
 	server/vino-server.desktop.in
 
 DISTCLEANFILES = \
-	intltool-extract \
-	intltool-merge \
-	intltool-update \
 	po/.intltool-merge-cache
 
 MAINTAINERCLEANFILES = $(gsettings_SCHEMAS:.xml=.valid)
@@ -1847,27 +1857,6 @@ uninstall-dist_clientfileDATA:
 	@list='$(dist_clientfile_DATA)'; test -n "$(clientfiledir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(clientfiledir)'; $(am__uninstall_files_from_dir)
-install-dist_convertDATA: $(dist_convert_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(dist_convert_DATA)'; test -n "$(convertdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(convertdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(convertdir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(convertdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(convertdir)" || exit $$?; \
-	done
-
-uninstall-dist_convertDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(dist_convert_DATA)'; test -n "$(convertdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(convertdir)'; $(am__uninstall_files_from_dir)
 install-nodist_applicationsDATA: $(nodist_applications_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(nodist_applications_DATA)'; test -n "$(applicationsdir)" || list=; \
@@ -1910,6 +1899,27 @@ uninstall-nodist_serviceDATA:
 	@list='$(nodist_service_DATA)'; test -n "$(servicedir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(servicedir)'; $(am__uninstall_files_from_dir)
+install-systemdserviceDATA: $(systemdservice_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(systemdservice_DATA)'; test -n "$(systemdservicedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(systemdservicedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(systemdservicedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(systemdservicedir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(systemdservicedir)" || exit $$?; \
+	done
+
+uninstall-systemdserviceDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(systemdservice_DATA)'; test -n "$(systemdservicedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(systemdservicedir)'; $(am__uninstall_files_from_dir)
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run 'make' without going through this Makefile.
@@ -2220,7 +2230,7 @@ all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA) \
 		config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(clientfiledir)" "$(DESTDIR)$(convertdir)" "$(DESTDIR)$(applicationsdir)" "$(DESTDIR)$(servicedir)"; do \
+	for dir in "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(clientfiledir)" "$(DESTDIR)$(applicationsdir)" "$(DESTDIR)$(servicedir)" "$(DESTDIR)$(systemdservicedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -2290,8 +2300,9 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-dist_clientfileDATA install-dist_convertDATA \
-	install-nodist_applicationsDATA install-nodist_serviceDATA
+install-data-am: install-dist_clientfileDATA \
+	install-nodist_applicationsDATA install-nodist_serviceDATA \
+	install-systemdserviceDATA
 
 install-dvi: install-dvi-recursive
 
@@ -2339,9 +2350,9 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-dist_clientfileDATA uninstall-dist_convertDATA \
-	uninstall-libexecPROGRAMS uninstall-nodist_applicationsDATA \
-	uninstall-nodist_serviceDATA
+uninstall-am: uninstall-dist_clientfileDATA uninstall-libexecPROGRAMS \
+	uninstall-nodist_applicationsDATA uninstall-nodist_serviceDATA \
+	uninstall-systemdserviceDATA
 
 .MAKE: $(am__recursive_targets) all check install install-am \
 	install-strip
@@ -2356,19 +2367,19 @@ uninstall-am: uninstall-dist_clientfileDATA uninstall-dist_convertDATA \
 	distclean-tags distcleancheck distdir distuninstallcheck dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-dist_clientfileDATA \
-	install-dist_convertDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-libexecPROGRAMS \
-	install-man install-nodist_applicationsDATA \
-	install-nodist_serviceDATA install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-libexecPROGRAMS install-man \
+	install-nodist_applicationsDATA install-nodist_serviceDATA \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip install-systemdserviceDATA installcheck \
 	installcheck-am installdirs installdirs-am maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags tags-am uninstall uninstall-am \
-	uninstall-dist_clientfileDATA uninstall-dist_convertDATA \
-	uninstall-libexecPROGRAMS uninstall-nodist_applicationsDATA \
-	uninstall-nodist_serviceDATA
+	uninstall-dist_clientfileDATA uninstall-libexecPROGRAMS \
+	uninstall-nodist_applicationsDATA uninstall-nodist_serviceDATA \
+	uninstall-systemdserviceDATA
 
 .PRECIOUS: Makefile
 
@@ -2412,6 +2423,9 @@ server/vino-server.desktop.in: server/vino-server.desktop.in.in
 
 server/org.freedesktop.Telepathy.Client.Vino.service: server/org.freedesktop.Telepathy.Client.Vino.service.in
 	$(AM_V_GEN)$(SED) -e "s|[@]libexecdir[@]|$(libexecdir)|" $< > $@
+
+@INSTALL_USER_UNITS_TRUE@$(systemdservice_DATA): server/vino-server.service.in Makefile
+@INSTALL_USER_UNITS_TRUE@	$(AM_V_GEN) $(SED) -e "s|\@libexecdir\@|$(libexecdir)|" $< > $@
 
 @INTLTOOL_DESKTOP_RULE@
 

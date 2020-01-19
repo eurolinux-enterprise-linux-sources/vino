@@ -1,17 +1,17 @@
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 SUBDIRS = po
 
-DISTCHECK_CONFIGURE_FLAGS = \
+AM_DISTCHECK_CONFIGURE_FLAGS = \
 	--with-avahi \
 	--with-secret \
-	--with-network-manager \
 	--with-telepathy \
 	--with-gnutls \
 	--with-gcrypt \
 	--with-zlib \
 	--with-jpeg \
 	--enable-debug \
-	--enable-compile-warnings=maximum
+	--enable-compile-warnings=maximum \
+	--with-systemduserunitdir='$${libdir}/systemd/user-distcheck'
 
 noinst_LTLIBRARIES = \
 	libeggsmclient.la
@@ -26,8 +26,7 @@ libeggsmclient_la_CPPFLAGS = \
 	-I$(top_builddir)
 
 libeggsmclient_la_LIBADD = \
-	$(EGG_SMCLIENT_LIBS) \
-	-lSM -lICE
+	$(EGG_SMCLIENT_LIBS)
 
 libeggsmclient_la_SOURCES = \
 	server/smclient/eggsmclient.c \
@@ -236,6 +235,15 @@ nodist_service_DATA = server/org.freedesktop.Telepathy.Client.Vino.service
 server/org.freedesktop.Telepathy.Client.Vino.service: server/org.freedesktop.Telepathy.Client.Vino.service.in
 	$(AM_V_GEN)$(SED) -e "s|[@]libexecdir[@]|$(libexecdir)|" $< > $@
 
+if INSTALL_USER_UNITS
+systemdservicedir = $(systemduserunitdir)
+systemdservice_in_files = server/vino-server.service.in
+systemdservice_DATA = server/vino-server.service
+
+$(systemdservice_DATA): server/vino-server.service.in Makefile
+	$(AM_V_GEN) $(SED) -e "s|\@libexecdir\@|$(libexecdir)|" $< > $@
+endif
+
 applicationsdir = $(datadir)/applications/
 applications_in_files = server/vino-server.desktop.in
 nodist_applications_DATA = $(applications_in_files:.desktop.in=.desktop)
@@ -248,9 +256,6 @@ gsettings_ENUM_FILES = common/vino-settings-enums.h
 gsettings_SCHEMAS = common/org.gnome.Vino.gschema.xml
 
 @GSETTINGS_RULES@
-
-convertdir = $(datadir)/GConf/gsettings
-dist_convert_DATA = common/org.gnome.Vino.convert
 
 if MAINTAINER_MODE
 dist-hook: dist-changelog
@@ -270,6 +275,7 @@ dist-changelog:
 
 dist_noinst_DATA = \
 	$(desktop_in_files) \
+	$(systemdservice_in_files) \
 	\
 	$(gsettings_ENUM_FILES) \
 	$(gsettings_SCHEMAS) \
@@ -292,9 +298,6 @@ dist_noinst_DATA = \
 	server/miniupnp/LICENCE \
 	\
 	ChangeLog.pre-git \
-	intltool-extract.in \
-	intltool-merge.in \
-	intltool-update.in \
 	vino.doap
 
 dist_noinst_SCRIPTS = autogen.sh
@@ -304,13 +307,11 @@ CLEANFILES = \
 	$(nodist_service_DATA) \
 	$(marshal_data) \
 	$(enum_data) \
+	$(systemdservice_DATA) \
 	server/vino-server.desktop \
 	server/vino-server.desktop.in
 
 DISTCLEANFILES = \
-	intltool-extract \
-	intltool-merge \
-	intltool-update \
 	po/.intltool-merge-cache
 
 MAINTAINERCLEANFILES = $(gsettings_SCHEMAS:.xml=.valid)

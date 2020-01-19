@@ -1,14 +1,246 @@
-2015-02-18  David King  <amigadave@amigadave.com>
+2016-09-20  David King  <amigadave@amigadave.com>
 
-	Update NEWS for 3.14.2
+	Update NEWS for 3.22.0 release
 
-2015-02-18  David King  <amigadave@amigadave.com>
+2016-09-13  David King  <amigadave@amigadave.com>
 
-	Fix Turkish desktop keywords translation
+	Update NEWS for 3.21.92 release
 
-2015-02-18  David King  <amigadave@amigadave.com>
+2016-09-10  Piotr Drąg  <piotrdrag@gmail.com>
 
-	Skip intermediate file with Automake 1.15
+	Updated Polish translation
+
+2016-09-06  David King  <amigadave@amigadave.com>
+
+	Remove unused --with-network-manager option
+
+2016-09-06  David King  <amigadave@amigadave.com>
+
+	Check for sm and ice in configure
+
+	SM and ICE are used by eggsmclient.
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=670426
+
+2016-09-06  David King  <amigadave@amigadave.com>
+
+	Allow building on non-systemd systems
+
+	Make installation of the systemd user unit optional, falling back to a
+	standard location if the systemd pkg-config file is not available, as
+	well as allowing the installation to be entirely disabled.
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=770759
+
+2016-09-04  David King  <amigadave@amigadave.com>
+
+	Update British English translation
+
+2016-08-31  Alberts Muktupāvels  <alberts.muktupavels@gmail.com>
+
+	build: Fix syntax error introduced in 27785a2
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=766330
+
+2016-08-30  Bastien Nocera  <hadess@hadess.net>
+
+	build: Use AM_DISTCHECK_CONFIGURE_FLAGS
+
+	And not DISTCHECK_CONFIGURE_FLAGS, as it is a developer/maintainer
+	option, not a user option.
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=766330
+
+2016-08-30  Bastien Nocera  <hadess@hadess.net>
+
+	server: Add a way for Vino to be started via user systemd
+
+	This will allow better tracking of whether vino is running, ensuring
+	that even if the manager to enable/disable its startup
+	(gnome-settings-daemon) crashes and needs to restart, its status is
+	still available by querying the user systemd.
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=766330
+
+2016-08-23  Piotr Drąg  <piotrdrag@gmail.com>
+
+	Updated Polish translation
+
+2016-08-19  Eric R. Schulz  <eric@ers35.com>
+
+	Fix two memory leaks
+
+	Unref builder in server_connected_changed_cb() and free tooltip in
+	vino_status_icon_update_state().
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=770091
+
+2016-08-02  Daniel Mustieles  <daniel.mustieles@gmail.com>
+
+	Updated Spanish translation
+
+2016-07-25  Piotr Drąg  <piotrdrag@gmail.com>
+
+	Add Language headers to po files
+
+	Future versions of gettext will fail if this header is missing.
+
+2016-05-30  Cédric Valmary  <cvalmary@yahoo.fr>
+
+	Updated Occitan translation
+
+2016-05-10  Cédric Valmary  <cvalmary@yahoo.fr>
+
+	Updated Occitan translation
+
+2016-04-28  Tiago Santos  <tiagofsantos81@sapo.pt>
+
+	Updated Portuguese translation
+
+2016-04-15  Fabio Tomat  <f.t.public@gmail.com>
+
+	Updated Friulian translation (cherry picked from commit 02c55160b2703675f55880dd8238c84342405532)
+
+2016-04-07  Fabio Tomat  <f.t.public@gmail.com>
+
+	Updated Friulian translation
+
+2016-04-07  Piotr Drąg  <piotrdrag@gmail.com>
+
+	Updated Polish translation
+
+2016-04-05  Fabio Tomat  <f.t.public@gmail.com>
+
+	Updated Friulian translation
+
+2016-03-22  David King  <amigadave@amigadave.com>
+
+	Update NEWS for 3.20.0 release
+
+2016-03-20  Ask Hjorth Larsen  <asklarsen@gmail.com>
+
+	Updated Danish translation
+
+2016-03-04  Cédric Valmary  <cvalmary@yahoo.fr>
+
+	Updated Occitan translation
+
+2015-12-03  Sveinn í Felli  <sv1@fellsnet.is>
+
+	Updated Icelandic translation
+
+2015-12-03  Sveinn í Felli  <sv1@fellsnet.is>
+
+	Updated Icelandic translation
+
+2015-12-03  Sveinn í Felli  <sv1@fellsnet.is>
+
+	Updated Icelandic translation
+
+2015-11-12  David King  <amigadave@amigadave.com>
+
+	Update NEWS for 3.18.1 release
+
+2015-10-19  David King  <amigadave@amigadave.com>
+
+	Avoid a crash when showing the preferences
+
+	Show an error message when the preferences desktop file is not found,
+	such as if gnome-control-center is not installed.
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=756654
+
+2015-09-21  David King  <amigadave@amigadave.com>
+
+	Update NEWS for 3.18.0 release
+
+2015-09-10  Piotr Drąg  <piotrdrag@gmail.com>
+
+	Fix FSF address in Polish translation
+
+2015-09-01  David King  <amigadave@amigadave.com>
+
+	Update NEWS for 3.17.91 release
+
+2015-08-28  Dimitri Tarassenko  <dtarassenko@gmail.com>
+
+	Improve handling of name resolution failure
+
+	Ensure that the host string for a client is always filled with a valid
+	string, by calling getnameinfo() a second time (ensuring a numeric host
+	is returned) if the first call fails.
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=754194
+
+2015-08-26  Chao-Hsiung Liao  <j_h_liau@yahoo.com.tw>
+
+	Updated Chinese (Taiwan) translation
+
+2015-08-24  Piotr Drąg  <piotrdrag@gmail.com>
+
+	Updated Polish translation
+
+2015-08-16  Fabio Tomat  <f.t.public@gmail.com>
+
+	Updated Friulian translation
+
+2015-08-11  Fabio Tomat  <f.t.public@gmail.com>
+
+	Added Friulian translation
+
+2015-06-29  Pedro Albuquerque  <palbuquerque73@gmail.com>
+
+	Updated Portuguese translation
+
+2015-06-01  Sveinn í Felli  <sv1@fellsnet.is>
+
+	Added Icelandic translation
+
+2015-05-25  Cédric Valmary  <cvalmary@yahoo.fr>
+
+	Updated Occitan translation
+
+2015-05-21  Jordi Mas  <jmas@softcatala.org>
+
+	Fixes to Catalan transation
+
+2015-05-21  Cédric Valmary  <cvalmary@yahoo.fr>
+
+	Updated Occitan translation
+
+2015-03-23  David King  <amigadave@amigadave.com>
+
+	Update NEWS for 3.16.0 release
+
+2015-03-16  David King  <amigadave@amigadave.com>
+
+	Update NEWS for 3.15.92 release
+
+2015-03-15  Josef Andersson  <josef.andersson@gmail.com>
+
+	Updated Swedish translation
+
+2015-03-13  Samir Ribic  <samir.ribic@etf.unsa.ba>
+
+	Updated Bosnian translation
+
+2015-03-09  Alexander Shopov  <ash@kambanaria.org>
+
+	Updated Bulgarian translation
+
+2015-03-07  Baurzhan Muftakhidinov  <baurthefirst@gmail.com>
+
+	Updated Kazakh translation
+
+2015-03-02  David King  <amigadave@amigadave.com>
+
+	Update NEWS for 3.15.91 release
+
+2015-02-24  David King  <amigadave@amigadave.com>
+
+	Avoid a critical EggSMClient warning on startup
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=662074
 
 2015-02-18  Ondrej Holy  <oholy@redhat.com>
 
@@ -22,17 +254,56 @@
 
 	https://bugzilla.gnome.org/show_bug.cgi?id=744692
 
-2015-01-20  Necdet Yücel  <necdetyucel@gmail.com>
+2015-02-16  David King  <amigadave@amigadave.com>
 
-	Updated Turkish translation
+	Update NEWS for 3.15.90 release
+
+2015-02-13  Dan Winship  <danw@gnome.org>
+
+	vino-upnp: Use GNetworkMonitor
+
+	Rather than talking to NetworkManager over D-Bus to get the network
+	state, just use GNetworkMonitor.
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=680473
+
+2015-01-19  David King  <amigadave@amigadave.com>
+
+	Update NEWS for 3.15.4 release
+
+2015-01-19  David King  <amigadave@amigadave.com>
+
+	Do not set obsolete PKG_NAME variable
+
+2015-01-19  David King  <amigadave@amigadave.com>
+
+	Skip intermediate file with Automake 1.15
+
+2015-01-19  David King  <amigadave@amigadave.com>
+
+	Remove obsolete intltool scripts from Makefile
 
 2015-01-09  David King  <amigadave@amigadave.com>
 
 	Fix Turkish desktop keywords translation
 
-2014-11-10  David King  <amigadave@amigadave.com>
+2015-01-06  David King  <amigadave@amigadave.com>
 
-	Update NEWS for 3.14.1 release
+	Remove obsolete GSettings conversion file
+
+	Avoid a crash in gsettings-data-convert.
+
+	https://bugzilla.gnome.org/show_bug.cgi?id=742458
+
+2014-12-04  Muhammet Kara  <muhammetk@gmail.com>
+
+	Updated Turkish translation
+
+2014-11-27  Trần Ngọc Quân  <vnwildman@gmail.com>
+
+	Updated Vietnamese translation
+
+	Signed-off-by: Trần Ngọc Quân <vnwildman@gmail.com>
 
 2014-11-10  Emin Tufan  <etcetin@gmail.com>
 

@@ -94,8 +94,6 @@ vino_status_icon_update_state (VinoStatusIcon *icon)
 
   visible = !vino_server_get_on_hold (icon->priv->server);
 
-  tooltip = g_strdup (_("Desktop sharing is enabled"));
-  
   if (icon->priv->clients != NULL)
     {
       int n_clients;
@@ -110,7 +108,10 @@ vino_status_icon_update_state (VinoStatusIcon *icon)
 			     (icon->priv->visibility == VINO_STATUS_ICON_VISIBILITY_ALWAYS) );
     }
   else
-    visible = visible && (icon->priv->visibility == VINO_STATUS_ICON_VISIBILITY_ALWAYS);
+    {
+      tooltip = g_strdup (_("Desktop sharing is enabled"));
+      visible = visible && (icon->priv->visibility == VINO_STATUS_ICON_VISIBILITY_ALWAYS);
+    }
 
   gtk_status_icon_set_tooltip_text (GTK_STATUS_ICON (icon), tooltip);
   gtk_status_icon_set_visible (GTK_STATUS_ICON (icon), visible);
@@ -202,6 +203,11 @@ vino_status_icon_preferences (VinoStatusIcon *icon)
   info = g_desktop_app_info_new ("gnome-sharing-panel.desktop");
   if (info == NULL)
     info = g_desktop_app_info_new ("vino-preferences.desktop");
+  if (info == NULL)
+    {
+      vino_util_show_error (NULL, _("Error displaying preferences"), NULL);
+      return;
+    }
   context = gdk_display_get_app_launch_context (gdk_screen_get_display (screen));
   if (!g_app_info_launch (G_APP_INFO (info), NULL, G_APP_LAUNCH_CONTEXT (context), &error))
     {
