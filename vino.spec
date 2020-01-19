@@ -5,7 +5,7 @@
 Summary: A remote desktop system for GNOME
 Name: vino
 Version: 3.8.1
-Release: 10%{?dist}
+Release: 3%{?dist}
 URL: http://www.gnome.org
 #VCS: git:git://git.gnome.org/vino
 Source0: http://download.gnome.org/sources/vino/3.8/%{name}-%{version}.tar.xz
@@ -15,9 +15,6 @@ Patch0: vino-allocation.patch
 
 # https://bugzilla.gnome.org/show_bug.cgi?id=641811
 Patch1: 0001-Reject-new-clients-if-in-the-deferred-state.patch
-
-Patch2: vino-3.8.1_translation_updates.patch
-Patch3: 0001-vino_background_draw-The-initialised-variable-should.patch
 
 License: GPLv2+
 Group: User Interface/Desktops
@@ -45,8 +42,6 @@ connect to a running GNOME session using VNC.
 %setup -q
 %patch0 -p1
 %patch1 -p1
-%patch2 -p2 -b .translations
-%patch3 -p1 -b .uninitialized
 
 # autoreconf -i -f
 # intltoolize --force
@@ -70,12 +65,13 @@ make %{?_smp_mflags}
 %install
 make install DESTDIR=$RPM_BUILD_ROOT
 
+desktop-file-install --delete-original                   \
+  --dir $RPM_BUILD_ROOT%{_datadir}/applications                         \
+  --add-only-show-in GNOME                                              \
+  $RPM_BUILD_ROOT%{_datadir}/applications/vino-preferences.desktop
+
 # stuff we don't want
 rm -rf $RPM_BUILD_ROOT%{_datadir}/icons/hicolor/icon-theme.cache
-rm -rf $RPM_BUILD_ROOT%{_bindir}/vino-preferences
-rm -rf $RPM_BUILD_ROOT%{_bindir}/vino-passwd
-rm -rf $RPM_BUILD_ROOT%{_datadir}/applications/vino-preferences.desktop
-rm -rf $RPM_BUILD_ROOT%{_datadir}/vino/vino-preferences.ui
 
 %find_lang %{name}
 
@@ -97,8 +93,10 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
 %files -f %{name}.lang
 %doc AUTHORS COPYING NEWS README docs/TODO docs/remote-desktop.txt
 %{_datadir}/vino
+%{_datadir}/applications/*.desktop
 %{_datadir}/dbus-1/services/org.freedesktop.Telepathy.Client.Vino.service
 %{_datadir}/telepathy/clients/Vino.client
+%{_bindir}/*
 %{_libexecdir}/*
 %{_sysconfdir}/xdg/autostart/vino-server.desktop
 %{_datadir}/glib-2.0/schemas/org.gnome.Vino.enums.xml
@@ -106,28 +104,6 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
 %{_datadir}/GConf/gsettings/org.gnome.Vino.convert
 
 %changelog
-* Sat Feb 15 2014 Soren Sandmann <ssp@redhat.com> - 3.8.1-10
-- Do not install vino-preferences.ui (#1059231)
-
-* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 3.8.1-9
-- Mass rebuild 2014-01-24
-
-* Tue Jan 7 2014 Soren Sandmann <ssp@redhat.com> - 3.8.1-8
-- Make 'initialised' variable static; caught by coverity
-
-* Mon Jan 6 2014 Soren Sandmann <ssp@redhat.com> - 3.8.1-7
-- Also dont install the .desktop file for vino-preferences
-
-* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 3.8.1-6
-- Mass rebuild 2013-12-27
-
-* Fri Dec 20 2013 Soren Sandmann <ssp@redhat.com> - 3.8.1-5
-- Dont install vino-preferences and vino-passwd.
-- This fixes bugs 882985, 948897, and 955591
-
-* Tue Dec 17 2013 Soren Sandmann <ssp@redhat.com> - 3.8.1-4
-- Translation updates (bz 1030384)
-
 * Wed Sep 18 2013 Debarshi Ray <rishi@fedorapeople.org> - 3.8.1-3
 - Fix denial of service (CVE-2013-5745)
 
@@ -445,7 +421,7 @@ glib-compile-schemas %{_datadir}/glib-2.0/schemas &>/dev/null || :
 * Mon Nov  6 2006 Matthias Clasen <mclasen@redhat.com> - 2.17.2-1
 - Update to 2.17.2
 
-* Sun Oct 22 2006 Matthias Clasen <mclasen@redhat.com> - 2.16.0-1
+* Sat Oct 22 2006 Matthias Clasen <mclasen@redhat.com> - 2.16.0-1
 - Update to 2.16.0
 
 * Wed Oct 18 2006 Matthias Clasen <mclasen@redhat.com> - 2.13.5-6
